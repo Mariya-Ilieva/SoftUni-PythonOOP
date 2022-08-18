@@ -1,0 +1,93 @@
+class Controller:
+    def __init__(self):
+        self.players = []
+        self.supplies = []
+
+    def add_player(self, *players):
+        added = []
+        for player in players:
+            if player not in self.players:
+                self.players.append(player)
+                added.append(player.name)
+        return f'Successfully added: {", ".join(added)}'
+
+    def add_supply(self, *supplies):
+        for supply in supplies:
+            self.supplies.append(supply)
+
+    def sustain(self, player_name: str, sustenance_type: str):
+        supply = None
+        player = [p for p in self.players if p.name == player_name and p.need_sustenance]
+        if not player:
+            return f'{player_name} have enough stamina.'
+        for idx in range(len(self.supplies) - 1, -1, -1):
+            if self.supplies[idx].__class__.__name__ == sustenance_type:
+                supply = self.supplies.pop(idx)
+                break
+        if supply is None:
+            if sustenance_type == 'Food':
+                raise Exception('There are no food supplies left!')
+            elif sustenance_type == 'Drink':
+                raise Exception('There are no drink supplies left!')
+        if player and supply is not None:
+            if player[0].stamina + supply.energy <= 100:
+                player[0].stamina += supply.energy
+            else:
+                player[0].stamina = 100
+            return f'{player_name} sustained successfully with {supply.name}.'
+
+    def duel(self, first_player_name: str, second_player_name: str):
+        player1 = [p for p in self.players if p.name == first_player_name and p.stamina > 0]
+        player2 = [p for p in self.players if p.name == second_player_name and p.stamina > 0]
+        if not player1 and not player2:
+            return f'Player {first_player_name} does not have enough stamina.\n' \
+                   f'Player {second_player_name} does not have enough stamina.'
+        if not player1:
+            return f'Player {first_player_name} does not have enough stamina.'
+        if not player2:
+            return f'Player {second_player_name} does not have enough stamina.'
+        if player1 and player2:
+            if player1[0].stamina > player2[0].stamina:
+                if player1[0].stamina - player2[0].stamina*0.5 >= 0:
+                    player1[0].stamina -= player2[0].stamina*0.5
+                else:
+                    player1[0].stamina = 0
+                    return f'Winner: {player2[0].name}'
+                if player2[0].stamina - player1[0].stamina*0.5 >= 0:
+                    player2[0].stamina -= player1[0].stamina*0.5
+                else:
+                    player2[0].stamina = 0
+                    return f'Winner: {player1[0].name}'
+            else:
+                if player2[0].stamina - player1[0].stamina*0.5 >= 0:
+                    player2[0].stamina -= player1[0].stamina*0.5
+                else:
+                    player2[0].stamina = 0
+                    return f'Winner: {player1[0].name}'
+                if player1[0].stamina - player2[0].stamina*0.5 >= 0:
+                    player1[0].stamina -= player2[0].stamina*0.5
+                else:
+                    player1[0].stamina = 0
+                    return f'Winner: {player2[0].name}'
+            if player1[0].stamina > player2[0].stamina:
+                return f'Winner: {player1[0].name}'
+            else:
+                return f'Winner: {player2[0].name}'
+
+    def next_day(self):
+        for player in self.players:
+            if player.stamina - player.age*2 >= 0:
+                player.stamina -= player.age*2
+            else:
+                player.stamina = 0
+        for player in self.players:
+            self.sustain(player.name, 'Food')
+            self.sustain(player.name, 'Drink')
+
+    def __str__(self):
+        output = ''
+        for player in self.players:
+            output += str(player) + '\n'
+        for supply in self.supplies:
+            output += supply.details() + '\n'
+        return output.strip()
