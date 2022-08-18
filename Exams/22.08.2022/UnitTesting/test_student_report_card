@@ -1,0 +1,72 @@
+from unittest import TestCase, main
+from Exam22Aug2020.student_report_card import StudentReportCard
+
+
+class TestStudentReportCard(TestCase):
+    def test_initialized_correctly(self):
+        student_report_card = StudentReportCard('Adam', 9)
+        self.assertEqual('Adam', student_report_card.student_name)
+        self.assertEqual(9, student_report_card.school_year)
+        self.assertEqual({}, student_report_card.grades_by_subject)
+
+    def test_name_empty_raises(self):
+        with self.assertRaises(ValueError) as ve:
+            StudentReportCard('', 9)
+        self.assertEqual('Student Name cannot be an empty string!', str(ve.exception))
+        student_report_card = StudentReportCard('Adam', 9)
+        self.assertEqual('Adam', student_report_card.student_name)
+
+    def test_school_year_not_correct_raises(self):
+        with self.assertRaises(ValueError) as ve:
+            StudentReportCard('Adam', 14)
+        self.assertEqual('School Year must be between 1 and 12!', str(ve.exception))
+        with self.assertRaises(ValueError) as ve:
+            StudentReportCard('Adam', 0)
+        self.assertEqual('School Year must be between 1 and 12!', str(ve.exception))
+
+    def test_school_year_boundaries(self):
+        student_report_card = StudentReportCard('Adam', 12)
+        self.assertEqual(12, student_report_card.school_year)
+        student_report_card = StudentReportCard('Adam', 1)
+        self.assertEqual(1, student_report_card.school_year)
+
+    def test_add_grade_method(self):
+        student_report_card = StudentReportCard('Adam', 9)
+        student_report_card.add_grade('Math', 5.55)
+        self.assertEqual({'Math': [5.55]}, student_report_card.grades_by_subject)
+        student_report_card.add_grade('Math', 4.55)
+        self.assertEqual({'Math': [5.55, 4.55]}, student_report_card.grades_by_subject)
+
+    def test_average_grade_by_subject_method(self):
+        student_report_card = StudentReportCard('Adam', 9)
+        self.assertEqual('', student_report_card.average_grade_by_subject())
+        student_report_card.add_grade('Math', 5.55)
+        student_report_card.add_grade('Math', 4.55)
+        self.assertEqual('Math: 5.05', student_report_card.average_grade_by_subject())
+        self.assertIn('Math', student_report_card.grades_by_subject)
+        student_report_card.add_grade('English', 3.33)
+        student_report_card.add_grade('English', 4.44)
+        self.assertEqual('Math: 5.05\nEnglish: 3.89', student_report_card.average_grade_by_subject())
+        self.assertIn('Math', student_report_card.grades_by_subject)
+
+    def test_average_grade_for_all_subjects_method(self):
+        student_report_card = StudentReportCard('Adam', 9)
+        student_report_card.add_grade('Math', 5.55)
+        student_report_card.add_grade('Math', 4.55)
+        self.assertEqual('Average Grade: 5.05', student_report_card.average_grade_for_all_subjects())
+        student_report_card.add_grade('English', 3.33)
+        student_report_card.add_grade('English', 4.44)
+        self.assertEqual('Average Grade: 4.47', student_report_card.average_grade_for_all_subjects())
+
+    def test_repr_method(self):
+        student_report_card = StudentReportCard('Adam', 9)
+        student_report_card.add_grade('Math', 5.55)
+        student_report_card.add_grade('Math', 4.55)
+        student_report_card.add_grade('English', 3.33)
+        student_report_card.add_grade('English', 4.44)
+        self.assertEqual('Name: Adam\nYear: 9\n----------\nMath: 5.05\nEnglish: 3.89\n----------\nAverage Grade: 4.47',
+                         student_report_card.__repr__())
+
+
+if __name__ == '__main__':
+    main()
