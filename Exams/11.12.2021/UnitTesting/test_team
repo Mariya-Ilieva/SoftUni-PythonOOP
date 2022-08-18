@@ -1,0 +1,68 @@
+from unittest import TestCase, main
+from Exam11December2021.team import Team
+
+
+class TestTeam(TestCase):
+    def test_initialized_correctly(self):
+        team = Team('Avengers')
+        self.assertEqual('Avengers', team.name)
+        self.assertEqual({}, team.members)
+
+    def test_name_initialization_raises(self):
+        with self.assertRaises(ValueError) as ve:
+            Team('Team+')
+        self.assertEqual('Team Name can contain only letters!', str(ve.exception))
+
+    def test_add_member_method(self):
+        team = Team('Avengers')
+        self.assertEqual('Successfully added: Pesho, Gosho, Maria, Eva',
+                         team.add_member(**{'Pesho': 19, 'Gosho': 16, 'Maria': 20, 'Eva': 33}))
+        self.assertEqual({'Pesho': 19, 'Gosho': 16, 'Maria': 20, 'Eva': 33}, team.members)
+        self.assertEqual('Successfully added: Ina', team.add_member(Ina=25))
+        self.assertIn('Ina', team.members)
+
+    def test_remove_member_method(self):
+        team = Team('Avengers')
+        team.add_member(**{'Pesho': 19, 'Gosho': 16, 'Maria': 20, 'Eva': 33})
+        self.assertEqual('Member Maria removed', team.remove_member('Maria'))
+        self.assertEqual({'Pesho': 19, 'Gosho': 16, 'Eva': 33}, team.members)
+        self.assertEqual('Member with name Mary does not exist', team.remove_member('Mary'))
+
+    def test_gt_method(self):
+        team = Team('Avengers')
+        team.add_member(**{'Pesho': 19, 'Gosho': 16, 'Maria': 20, 'Eva': 33})
+        other = Team('Losers')
+        other.add_member(**{'A': 20, 'B': 21, 'C': 22})
+        self.assertEqual(True, team.__gt__(other))
+        other.add_member(**{'D': 23, 'E': 24})
+        self.assertEqual(False, team.__gt__(other))
+
+    def test_len_method(self):
+        team = Team('Avengers')
+        team.add_member(**{'Pesho': 19, 'Gosho': 16, 'Maria': 20, 'Eva': 33})
+        self.assertEqual(4, team.__len__())
+
+    def test_add_method(self):
+        team = Team('Avengers')
+        team.add_member(**{'Gosho': 16, 'Maria': 20, 'Eva': 33})
+        other = Team('Losers')
+        other.add_member(**{'A': 20, 'B': 21, 'C': 22})
+        new_team = team.__add__(other)
+        self.assertEqual('AvengersLosers', new_team.name)
+        self.assertEqual({'Gosho': 16, 'Maria': 20, 'Eva': 33, 'A': 20, 'B': 21, 'C': 22}, new_team.members)
+        self.assertEqual(6, new_team.__len__())
+
+    def test_str_method(self):
+        team = Team('Avengers')
+        team.add_member(**{'Gosho': 16, 'Maria': 20, 'Eva': 33})
+        other = Team('Losers')
+        other.add_member(**{'A': 20, 'B': 21, 'C': 22})
+        new_team = team.__add__(other)
+        output = 'Team name: AvengersLosers\nMember: Eva - 33-years old\nMember: C - 22-years old\n' \
+                 'Member: B - 21-years old\nMember: A - 20-years old\nMember: Maria - 20-years old\n' \
+                 'Member: Gosho - 16-years old'
+        self.assertEqual(output, new_team.__str__())
+
+
+if __name__ == '__main__':
+    main()
