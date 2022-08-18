@@ -1,0 +1,50 @@
+from unittest import TestCase, main
+from Exam10April2022.movie import Movie
+
+
+class TestMovie(TestCase):
+    def test_initialized_correctly(self):
+        movie = Movie('The Truman Show', 1998, 8.2)
+        self.assertEqual('The Truman Show', movie.name)
+        self.assertEqual(1998, movie.year)
+        self.assertEqual(8.2, movie.rating)
+        self.assertEqual([], movie.actors)
+
+    def test_name_raises(self):
+        with self.assertRaises(ValueError) as ve:
+            Movie('', 1998, 8.2)
+        self.assertEqual('Name cannot be an empty string!', str(ve.exception))
+
+    def test_year_raises(self):
+        with self.assertRaises(ValueError) as ve:
+            Movie('The Truman Show', 1850, 8.2)
+        self.assertEqual('Year is not valid!', str(ve.exception))
+
+    def test_add_actor_method(self):
+        movie = Movie('The Truman Show', 1998, 8.2)
+        movie.add_actor('Jim Carrey')
+        self.assertEqual(['Jim Carrey'], movie.actors)
+        movie.add_actor('Bradley Cooper')
+        self.assertEqual(['Jim Carrey', 'Bradley Cooper'], movie.actors)
+        self.assertEqual('Bradley Cooper is already added in the list of actors!', movie.add_actor('Bradley Cooper'))
+
+    def test_greater_than_method(self):
+        movie = Movie('The Truman Show', 1998, 8.2)
+        new_movie = Movie('Monster', 2003, 7.3)
+        self.assertEqual('"The Truman Show" is better than "Monster"', movie.__gt__(new_movie))
+        newest_movie = Movie('Fight Club', 1999, 8.8)
+        self.assertEqual('"Fight Club" is better than "The Truman Show"', movie.__gt__(newest_movie))
+
+    def test_repr_method(self):
+        movie = Movie('The Truman Show', 1998, 8.2)
+        movie.add_actor('Jim Carrey')
+        movie.add_actor('Ed Harris')
+        movie.add_actor('Laura Linney')
+        movie.add_actor('Paul Giamatti')
+        output = 'Name: The Truman Show\nYear of Release: 1998\nRating: 8.20\n' \
+                 'Cast: Jim Carrey, Ed Harris, Laura Linney, Paul Giamatti'
+        self.assertEqual(output, movie.__repr__())
+
+
+if __name__ == '__main__':
+    main()
