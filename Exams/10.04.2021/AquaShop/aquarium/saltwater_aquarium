@@ -1,0 +1,6 @@
+from Exam10April2021.AquaShop.aquarium.base_aquarium import BaseAquarium
+
+
+class SaltwaterAquarium(BaseAquarium):
+    def __init__(self, name: str, capacity=25):
+        super().__init__(name, capacity)
