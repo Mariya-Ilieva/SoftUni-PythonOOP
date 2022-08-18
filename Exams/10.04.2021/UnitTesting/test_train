@@ -1,0 +1,49 @@
+from unittest import TestCase, main
+
+from Exam10April2021.train import Train
+
+
+class TestTrain(TestCase):
+    def test_initialized_correctly(self):
+        train = Train('Express', 300)
+        self.assertEqual('Express', train.name)
+        self.assertEqual(300, train.capacity)
+        self.assertEqual([], train.passengers)
+
+    def test_train_add_method_raises_full(self):
+        train = Train('Express', 300)
+        for name in range(300):
+            train.add(str(name))
+        with self.assertRaises(ValueError) as ve:
+            train.add('Spiro')
+        self.assertEqual('Train is full', str(ve.exception))
+
+    def test_train_add_method_raises_passenger_exists(self):
+        train = Train('Express', 300)
+        train.add('Layla')
+        with self.assertRaises(ValueError) as ve:
+            train.add('Layla')
+        self.assertEqual('Passenger Layla Exists', str(ve.exception))
+
+    def test_train_add_method_correct(self):
+        train = Train('Express', 300)
+        self.assertEqual('Added passenger Layla', train.add('Layla'))
+        self.assertEqual(['Layla'], train.passengers)
+        self.assertEqual('Added passenger Diana', train.add('Diana'))
+        self.assertEqual(['Layla', 'Diana'], train.passengers)
+
+    def test_train_remove_method_raises(self):
+        train = Train('Express', 300)
+        train.add('Layla')
+        with self.assertRaises(ValueError) as ve:
+            train.remove('John')
+        self.assertEqual('Passenger Not Found', str(ve.exception))
+
+    def test_train_remove_method_correct(self):
+        train = Train('Express', 300)
+        train.add('Layla')
+        self.assertEqual('Removed Layla', train.remove('Layla'))
+
+
+if __name__ == '__main__':
+    main()
