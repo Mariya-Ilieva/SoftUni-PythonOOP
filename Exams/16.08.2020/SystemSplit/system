@@ -1,0 +1,75 @@
+from Exam16Aug2020.SystemSplit.hardware.heavy_hardware import HeavyHardware
+from Exam16Aug2020.SystemSplit.hardware.power_hardware import PowerHardware
+from Exam16Aug2020.SystemSplit.software.express_software import ExpressSoftware
+from Exam16Aug2020.SystemSplit.software.light_software import LightSoftware
+
+
+class System:
+    _hardware = []
+    _software = []
+
+    @staticmethod
+    def register_power_hardware(name: str, capacity: int, memory: int):
+        System._hardware.append(PowerHardware(name, capacity, memory))
+
+    @staticmethod
+    def register_heavy_hardware(name: str, capacity: int, memory: int):
+        System._hardware.append(HeavyHardware(name, capacity, memory))
+
+    @staticmethod
+    def register_express_software(hardware_name: str, name: str, capacity_consumption: int, memory_consumption: int):
+        hard = [h for h in System._hardware if h.name == hardware_name]
+        if not hard:
+            return 'Hardware does not exist'
+        try:
+            express_software = ExpressSoftware(name, capacity_consumption, memory_consumption)
+            hard[0].install(express_software)
+            System._software.append(express_software)
+        except Exception:
+            raise Exception('Software cannot be installed')
+
+    @staticmethod
+    def register_light_software(hardware_name: str, name: str, capacity_consumption: int, memory_consumption: int):
+        hard = [h for h in System._hardware if h.name == hardware_name]
+        if not hard:
+            return 'Hardware does not exist'
+        try:
+            light_software = LightSoftware(name, capacity_consumption, memory_consumption)
+            hard[0].install(light_software)
+            System._software.append(light_software)
+        except Exception:
+            raise Exception('Software cannot be installed')
+
+    @staticmethod
+    def release_software_component(hardware_name: str, software_name: str):
+        hard = [h for h in System._hardware if h.name == hardware_name]
+        soft = [s for s in System._software if s.name == software_name]
+        if not hard or not soft:
+            return 'Some of the components do not exist'
+        hard[0].uninstall(soft[0])
+        System._software.remove(soft[0])
+
+    @staticmethod
+    def analyze():
+        total_memory_consumption_s = sum([x.memory_consumption for x in System._software])
+        total_memory_h = sum([x.memory for x in System._hardware])
+        total_capacity_consumption_s = sum([x.capacity_consumption for x in System._software])
+        total_capacity_h = sum([x.capacity for x in System._hardware])
+        return f'System Analysis\nHardware Components: {len(System._hardware)}\n' \
+               f'Software Components: {len(System._software)}\nTotal Operational Memory: {total_memory_consumption_s}' \
+               f' / {total_memory_h}\nTotal Capacity Taken: {total_capacity_consumption_s}' \
+               f' / {total_capacity_h}'
+
+    @staticmethod
+    def system_split():
+        output = ''
+        for hard in System._hardware:
+            output += f'Hardware Component - {hard.name}\nExpress Software Components: ' \
+                      f'{len([s for s in hard.software_components if s.software_type == "Express"])}\n' \
+                      f'Light Software Components: ' \
+                      f'{len([s for s in hard.software_components if s.software_type == "Light"])}\n' \
+                      f'Memory Usage: {sum(x.memory_consumption for x in hard.software_components)} / {hard.memory}\n' \
+                      f'Capacity Usage: {sum(x.capacity_consumption for x in hard.software_components)} / ' \
+                      f'{hard.capacity}\nType: {hard.hardware_type}\nSoftware Components: ' \
+                      f'{", ".join(x.name for x in hard.software_components) if hard.software_components else "None"}\n'
+        return output.strip()
