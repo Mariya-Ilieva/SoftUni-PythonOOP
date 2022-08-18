@@ -1,0 +1,85 @@
+from unittest import TestCase, main
+from Exam15August2021.pet_shop import PetShop
+
+
+class TestPetShop(TestCase):
+    def test_initialized_correctly(self):
+        pet_shop = PetShop('Pet\'s Heaven')
+        self.assertEqual('Pet\'s Heaven', pet_shop.name)
+        self.assertEqual({}, pet_shop.food)
+        self.assertEqual([], pet_shop.pets)
+
+    def test_add_food_method_raises(self):
+        pet_shop = PetShop('Pet\'s Heaven')
+        with self.assertRaises(ValueError) as ve:
+            pet_shop.add_food('meat', 0)
+        self.assertEqual('Quantity cannot be equal to or less than 0', str(ve.exception))
+        with self.assertRaises(ValueError) as ve:
+            pet_shop.add_food('meat', -1)
+        self.assertEqual('Quantity cannot be equal to or less than 0', str(ve.exception))
+
+    def test_add_food_method(self):
+        pet_shop = PetShop('Pet\'s Heaven')
+        self.assertEqual(f'Successfully added 5.00 grams of meat.', pet_shop.add_food('meat', 5))
+        self.assertEqual({'meat': 5.00}, pet_shop.food)
+        self.assertEqual(f'Successfully added 15.00 grams of apple.', pet_shop.add_food('apple', 15))
+        self.assertEqual({'meat': 5.00, 'apple': 15.00}, pet_shop.food)
+        self.assertEqual(f'Successfully added 25.00 grams of meat.', pet_shop.add_food('meat', 25))
+        self.assertEqual({'meat': 30.00, 'apple': 15.00}, pet_shop.food)
+
+    def test_add_pet_method(self):
+        pet_shop = PetShop('Pet\'s Heaven')
+        self.assertEqual('Successfully added Mina.', pet_shop.add_pet('Mina'))
+        self.assertIn('Mina', pet_shop.pets)
+        self.assertEqual('Successfully added Nina.', pet_shop.add_pet('Nina'))
+        self.assertIn('Nina', pet_shop.pets)
+        self.assertEqual(['Mina', 'Nina'], pet_shop.pets)
+
+    def test_add_pet_method_raises(self):
+        pet_shop = PetShop('Pet\'s Heaven')
+        pet_shop.add_pet('Lora')
+        pet_shop.add_pet('Kain')
+        with self.assertRaises(Exception) as ex:
+            pet_shop.add_pet('Lora')
+        self.assertEqual('Cannot add a pet with the same name', str(ex.exception))
+
+    def test_feed_pet_method_raises(self):
+        pet_shop = PetShop('Pet\'s Heaven')
+        pet_shop.add_food('apple', 12)
+        pet_shop.add_pet('Gosho')
+        with self.assertRaises(Exception) as ex:
+            pet_shop.feed_pet('meat', 'Pesho')
+        self.assertEqual('Please insert a valid pet name', str(ex.exception))
+
+    def test_feed_pet_method_no_food(self):
+        pet_shop = PetShop('Pet\'s Heaven')
+        pet_shop.add_food('apple', 12)
+        pet_shop.add_pet('Thomas')
+        self.assertEqual('You do not have meat', pet_shop.feed_pet('meat', 'Thomas'))
+
+    def test_feed_pet_method_less(self):
+        pet_shop = PetShop('Pet\'s Heaven')
+        pet_shop.add_food('apple', 12)
+        pet_shop.add_pet('Anna')
+        self.assertEqual('Adding food...', pet_shop.feed_pet('apple', 'Anna'))
+        self.assertEqual({'apple': 1012.00}, pet_shop.food)
+
+    def test_feed_pet_method_correct(self):
+        pet_shop = PetShop('Pet\'s Heaven')
+        pet_shop.add_food('apple', 212)
+        pet_shop.add_pet('Anna')
+        self.assertEqual('Anna was successfully fed', pet_shop.feed_pet('apple', 'Anna'))
+        self.assertEqual({'apple': 112.00}, pet_shop.food)
+
+    def test_repr_method_correct(self):
+        pet_shop = PetShop('Pet\'s Heaven')
+        pet_shop.add_pet('Lora')
+        pet_shop.add_pet('Kain')
+        pet_shop.add_food('apple', 12)
+        pet_shop.add_pet('Thomas')
+        pet_shop.add_pet('Anna')
+        self.assertEqual('Shop Pet\'s Heaven:\nPets: Lora, Kain, Thomas, Anna', repr(pet_shop))
+
+
+if __name__ == '__main__':
+    main()
