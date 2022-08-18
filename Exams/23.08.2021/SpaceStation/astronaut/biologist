@@ -1,0 +1,11 @@
+from Exam23August2021.SpaceStation.astronaut.astronaut import Astronaut
+
+
+class Biologist(Astronaut):
+    DEFAULT_OXYGEN = 5
+
+    def __init__(self, name, oxygen=70):
+        super().__init__(name, oxygen)
+
+    def breathe(self):
+        self.oxygen -= self.DEFAULT_OXYGEN
