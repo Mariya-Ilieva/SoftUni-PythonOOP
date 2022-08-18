@@ -1,0 +1,115 @@
+from Exam15August2021.Bakery.baked_food.bread import Bread
+from Exam15August2021.Bakery.baked_food.cake import Cake
+from Exam15August2021.Bakery.drink.tea import Tea
+from Exam15August2021.Bakery.drink.water import Water
+from Exam15August2021.Bakery.table.inside_table import InsideTable
+from Exam15August2021.Bakery.table.outside_table import OutsideTable
+
+
+class Bakery:
+    def __init__(self, name):
+        self.name = name
+        self.food_menu = []
+        self.drinks_menu = []
+        self.tables_repository = []
+        self.total_income = 0
+
+    @property
+    def name(self):
+        return self.__name
+
+    @name.setter
+    def name(self, value):
+        if not value.strip():
+            raise ValueError('Name cannot be empty string or white space!')
+        self.__name = value
+
+    def add_food(self, food_type, name, price):
+        food = [f.name for f in self.food_menu]
+        if name in food:
+            raise Exception(f'{food_type} {name} is already in the menu!')
+        if food_type == 'Bread':
+            self.food_menu.append(Bread(name, price))
+            return f'Added {name} ({food_type}) to the food menu'
+        elif food_type == 'Cake':
+            self.food_menu.append(Cake(name, price))
+            return f'Added {name} ({food_type}) to the food menu'
+
+    def add_drink(self, drink_type, name, portion, brand):
+        drinks = [d.name for d in self.drinks_menu]
+        if name in drinks:
+            raise Exception(f'{drink_type} {name} is already in the menu!')
+        if drink_type == 'Tea':
+            self.drinks_menu.append(Tea(name, portion, brand))
+            return f'Added {name} ({brand}) to the drink menu'
+        elif drink_type == 'Water':
+            self.drinks_menu.append(Water(name, portion, brand))
+            return f'Added {name} ({brand}) to the drink menu'
+
+    def add_table(self, table_type, table_number, capacity):
+        nums = [t.table_number for t in self.tables_repository]
+        if table_number in nums:
+            raise Exception(f'Table {table_number} is already in the bakery!')
+        if table_type == 'InsideTable':
+            self.tables_repository.append(InsideTable(table_number, capacity))
+            return f'Added table number {table_number} in the bakery'
+        elif table_type == 'OutsideTable':
+            self.tables_repository.append(OutsideTable(table_number, capacity))
+            return f'Added table number {table_number} in the bakery'
+
+    def reserve_table(self, number_of_people):
+        table = [t for t in self.tables_repository if not t.is_reserved and t.capacity >= number_of_people]
+        if not table:
+            return f'No available table for {number_of_people} people'
+        table[0].reserve(number_of_people)
+        return f'Table {table[0].table_number} has been reserved for {number_of_people} people'
+
+    def order_food(self, table_number, *foods):
+        table = [t for t in self.tables_repository if t.table_number == table_number]
+        if not table:
+            return f'Could not find table {table_number}'
+        to_add = ''
+        output = f'Table {table_number} ordered:\n'
+        for food in foods:
+            food_in = [f for f in self.food_menu if f.name == food]
+            if food_in:
+                table[0].order_food(food_in[0])
+                output += f'{repr(food_in[0])}\n'
+            else:
+                to_add += f'{food}\n'
+        output += f'{self.name} does not have in the menu:\n'
+        return output + to_add.strip()
+
+    def order_drink(self, table_number, *drinks):
+        table = [t for t in self.tables_repository if t.table_number == table_number]
+        if not table:
+            return f'Could not find table {table_number}'
+        to_add = ''
+        output = f'Table {table_number} ordered:\n'
+        for drink in drinks:
+            drink_in = [d for d in self.drinks_menu if d.name == drink]
+            if drink_in:
+                table[0].order_drink(drink_in[0])
+                output += f'{repr(drink_in[0])}\n'
+            else:
+                to_add += f'{drink}\n'
+        output += f'{self.name} does not have in the menu:\n'
+        return output + to_add.strip()
+
+    def leave_table(self, table_number):
+        table = [t for t in self.tables_repository if t.table_number == table_number]
+        if not table:
+            return None
+        bill = table[0].get_bill()
+        self.total_income += bill
+        table[0].clear()
+        return f'Table: {table_number}\nBill: {bill:.2f}'
+
+    def get_free_tables_info(self):
+        output = ''
+        for table in self.tables_repository:
+            output += f'{table.free_table_info()}\n'
+        return output.strip()
+
+    def get_total_income(self):
+        return f'Total income: {self.total_income:.2f}lv'
