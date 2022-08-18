@@ -1,0 +1,46 @@
+from unittest import TestCase, main
+from Exam23August2021.library import Library
+
+
+class TestLibrary(TestCase):
+    def test_initialized_correctly(self):
+        library = Library('Alissa')
+        self.assertEqual('Alissa', library.name)
+        self.assertEqual({}, library.books_by_authors)
+        self.assertEqual({}, library.readers)
+
+    def test_initialized_raises(self):
+        with self.assertRaises(ValueError) as ve:
+            library = Library('')
+        self.assertEqual('Name cannot be empty string!', str(ve.exception))
+
+    def test_add_book_method(self):
+        library = Library('Alissa')
+        library.add_book('Hunefer', 'Book of the dead')
+        self.assertEqual({'Hunefer': ['Book of the dead']}, library.books_by_authors)
+        library.add_book('Hunefer', 'Papyrus')
+        self.assertEqual({'Hunefer': ['Book of the dead', 'Papyrus']}, library.books_by_authors)
+
+    def test_add_reader_method(self):
+        library = Library('Alissa')
+        library.add_reader('Gosho')
+        self.assertEqual({'Gosho': []}, library.readers)
+        self.assertEqual('Gosho is already registered in the Alissa library.', library.add_reader('Gosho'))
+
+    def test_rent_book_method(self):
+        library = Library('Alissa')
+        self.assertEqual("Gosho is not registered in the Alissa Library.",
+                         library.rent_book('Gosho', 'Hunefer', 'Papyrus'))
+        library.add_reader('Gosho')
+        self.assertEqual("Alissa Library does not have any Hunefer's books.",
+                         library.rent_book('Gosho', 'Hunefer', 'Papyrus'))
+        library.add_book('Hunefer', 'Book of the dead')
+        self.assertEqual("""Alissa Library does not have Hunefer's "Papyrus".""",
+                         library.rent_book('Gosho', 'Hunefer', 'Papyrus'))
+        library.rent_book('Gosho', 'Hunefer', 'Book of the dead')
+        self.assertEqual({'Gosho': [{'Hunefer': 'Book of the dead'}]}, library.readers)
+        self.assertEqual({'Hunefer': []}, library.books_by_authors)
+
+
+if __name__ == '__main__':
+    main()
