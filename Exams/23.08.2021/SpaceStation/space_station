@@ -1,0 +1,79 @@
+from Exam23August2021.SpaceStation.astronaut.astronaut_repository import AstronautRepository
+from Exam23August2021.SpaceStation.astronaut.biologist import Biologist
+from Exam23August2021.SpaceStation.astronaut.geodesist import Geodesist
+from Exam23August2021.SpaceStation.astronaut.meteorologist import Meteorologist
+from Exam23August2021.SpaceStation.planet.planet import Planet
+from Exam23August2021.SpaceStation.planet.planet_repository import PlanetRepository
+
+
+class SpaceStation:
+
+    def __init__(self):
+        self.planet_repository = PlanetRepository()
+        self.astronaut_repository = AstronautRepository()
+        self.successful = 0
+        self.not_completed = 0
+
+    def add_astronaut(self, astronaut_type, name):
+        valid = {'Biologist': Biologist, 'Geodesist': Geodesist, 'Meteorologist': Meteorologist}
+        if astronaut_type not in valid.keys():
+            raise Exception('Astronaut type is not valid!')
+        if self.astronaut_repository.find_by_name(name):
+            return f'{name} is already added.'
+        self.astronaut_repository.add(valid[astronaut_type](name))
+        return f'Successfully added {astronaut_type}: {name}.'
+
+    def add_planet(self, name, items):
+        if self.planet_repository.find_by_name(name):
+            return f'{name} is already added.'
+        planet = Planet(name)
+        planet.items = items.split(', ')
+        self.planet_repository.add(planet)
+        return f'Successfully added Planet: {name}.'
+
+    def retire_astronaut(self, name):
+        if not self.astronaut_repository.find_by_name(name):
+            raise Exception(f'Astronaut {name} doesn\'t exist!')
+        self.astronaut_repository.remove(self.astronaut_repository.find_by_name(name))
+        return f'Astronaut {name} was retired!'
+
+    def recharge_oxygen(self):
+        for a in self.astronaut_repository.astronauts:
+            a.increase_oxygen(10)
+
+    def send_on_mission(self, planet_name):
+        planet = self.planet_repository.find_by_name(planet_name)
+        if not planet:
+            raise Exception('Invalid planet name!')
+        ready = [a for a in self.astronaut_repository.astronauts if a.oxygen > 30]
+        if not ready:
+            raise Exception('You need at least one astronaut to explore the planet!')
+        mission = sorted(ready, key=lambda x: -x.oxygen)
+        if len(mission) > 5:
+            mission = mission[:5]
+        participated = 0
+        for astronaut in mission:
+            if not planet.items:
+                break
+            participated += 1
+            while astronaut.oxygen >= astronaut.DEFAULT_OXYGEN and planet.items:
+                item = planet.items.pop()
+                astronaut.backpack.append(item)
+                astronaut.breathe()
+        if not planet.items:
+            self.successful += 1
+            return f'Planet: {planet_name} was explored. {participated} astronauts participated in collecting items.'
+        else:
+            self.not_completed += 1
+            return 'Mission is not completed.'
+
+    def report(self):
+        output = f'{self.successful} successful missions!\n' \
+                 f'{self.not_completed} missions were not completed!\nAstronauts\' info:\n'
+        for astronaut in self.astronaut_repository.astronauts:
+            if not astronaut.backpack:
+                output += f'Name: {astronaut.name}\nOxygen: {astronaut.oxygen}\nBackpack items: none\n'
+            else:
+                output += f'Name: {astronaut.name}\nOxygen: {astronaut.oxygen}\n' \
+                          f'Backpack items: {", ".join(astronaut.backpack)}\n'
+        return output.strip()
