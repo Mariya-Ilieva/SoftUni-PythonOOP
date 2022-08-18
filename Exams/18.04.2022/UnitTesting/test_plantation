@@ -1,0 +1,74 @@
+from unittest import TestCase, main
+from Exam18April2022.plantation import Plantation
+
+
+class TestPlantation(TestCase):
+    def test_initialised_correctly(self):
+        plantation = Plantation(250)
+        self.assertEqual(250, plantation.size)
+        self.assertEqual({}, plantation.plants)
+        self.assertEqual([], plantation.workers)
+        plantation = Plantation(0)
+        self.assertEqual(0, plantation.size)
+
+    def test_incorrect_size_raises(self):
+        with self.assertRaises(ValueError) as ve:
+            Plantation(-15)
+        self.assertEqual('Size must be positive number!', str(ve.exception))
+
+    def test_hire_worker_method(self):
+        plantation = Plantation(250)
+        self.assertEqual('Ivan successfully hired.', plantation.hire_worker('Ivan'))
+        self.assertEqual(['Ivan'], plantation.workers)
+        self.assertEqual('Kolyo successfully hired.', plantation.hire_worker('Kolyo'))
+        self.assertEqual(['Ivan', 'Kolyo'], plantation.workers)
+        with self.assertRaises(ValueError)as ve:
+            plantation.hire_worker('Ivan')
+        self.assertEqual('Worker already hired!', str(ve.exception))
+
+    def test_len_method_correct(self):
+        plantation = Plantation(250)
+        plantation.plants = {'Ivan': ['Pumpkins', 'Tomatoes', 'Cucumbers'], 'Kolyo': ['Zucchinis', 'Onions']}
+        self.assertEqual(5, len(plantation))
+
+    def test_planting_method_raises(self):
+        plantation = Plantation(250)
+        with self.assertRaises(ValueError)as ve:
+            plantation.planting('Ivan', 'Pumpkins')
+        self.assertEqual('Worker with name Ivan is not hired!', str(ve.exception))
+        plantation.hire_worker('Ivan')
+        for i in range(250):
+            plantation.planting('Ivan', 'Pumpkins' + str(i))
+        with self.assertRaises(ValueError) as ex:
+            plantation.planting('Ivan', 'Pumpkins')
+        self.assertEqual("The plantation is full!", str(ex.exception))
+
+    def test_planting_method_correct(self):
+        plantation = Plantation(250)
+        plantation.hire_worker('Ivan')
+        self.assertEqual('Ivan planted it\'s first Pumpkins.', plantation.planting('Ivan', 'Pumpkins'))
+        self.assertEqual({'Ivan': ['Pumpkins']}, plantation.plants)
+        self.assertEqual('Ivan planted Cucumbers.', plantation.planting('Ivan', 'Cucumbers'))
+        self.assertEqual({'Ivan': ['Pumpkins', 'Cucumbers']}, plantation.plants)
+
+    def test_str_method(self):
+        plantation = Plantation(250)
+        plantation.hire_worker('Ivan')
+        plantation.hire_worker('Kolyo')
+        plantation.planting('Ivan', 'Pumpkins')
+        plantation.planting('Ivan', 'Cucumbers')
+        plantation.planting('Kolyo', 'Zucchinis')
+        plantation.planting('Kolyo', 'Onions')
+        res = 'Plantation size: 250\nIvan, Kolyo\nIvan planted: Pumpkins, Cucumbers\nKolyo planted: Zucchinis, Onions'
+        self.assertEqual(res, str(plantation))
+
+    def test_repr_method(self):
+        plantation = Plantation(250)
+        plantation.hire_worker('Ivan')
+        plantation.hire_worker('Kolyo')
+        res = 'Size: 250\nWorkers: Ivan, Kolyo'
+        self.assertEqual(res, repr(plantation))
+
+
+if __name__ == '__main__':
+    main()
