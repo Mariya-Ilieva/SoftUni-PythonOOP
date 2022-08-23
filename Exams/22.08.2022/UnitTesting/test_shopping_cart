@@ -1,0 +1,83 @@
+from unittest import TestCase, main
+from shopping_cart import ShoppingCart
+
+
+class TestShoppingCart(TestCase):
+    def test_initialized_correctly(self):
+        shopping_cart = ShoppingCart('Winery', 560)
+        self.assertEqual('Winery', shopping_cart.shop_name)
+        self.assertEqual(560, shopping_cart.budget)
+        self.assertEqual({}, shopping_cart.products)
+
+    def test_shop_name_incorrect_raises(self):
+        with self.assertRaises(ValueError) as ve:
+            ShoppingCart('winery', 560)
+        self.assertEqual('Shop must contain only letters and must start with capital letter!', str(ve.exception))
+        with self.assertRaises(ValueError) as ve:
+            ShoppingCart('Wine6y', 560)
+        self.assertEqual('Shop must contain only letters and must start with capital letter!', str(ve.exception))
+
+    def test_add_to_cart_raises(self):
+        shopping_cart = ShoppingCart('Winery', 560)
+        with self.assertRaises(ValueError) as ve:
+            shopping_cart.add_to_cart('cheese', 101.10)
+        self.assertEqual('Product cheese cost too much!', str(ve.exception))
+
+    def test_add_to_cart_method(self):
+        shopping_cart = ShoppingCart('Winery', 560)
+        self.assertEqual('cheese product was successfully added to the cart!',
+                         shopping_cart.add_to_cart('cheese', 55.50))
+        self.assertIn('cheese', shopping_cart.products)
+        self.assertEqual({'cheese': 55.50}, shopping_cart.products)
+
+    def test_remove_from_cart_raises(self):
+        shopping_cart = ShoppingCart('Winery', 560)
+        shopping_cart.add_to_cart('salami', 33.30)
+        with self.assertRaises(ValueError) as ve:
+            shopping_cart.remove_from_cart('cheese')
+        self.assertEqual('No product with name cheese in the cart!', str(ve.exception))
+
+    def test_remove_from_cart_method(self):
+        shopping_cart = ShoppingCart('Winery', 560)
+        shopping_cart.add_to_cart('cheese', 55.50)
+        shopping_cart.add_to_cart('salami', 33.30)
+        self.assertEqual('Product cheese was successfully removed from the cart!',
+                         shopping_cart.remove_from_cart('cheese'))
+        self.assertNotIn('cheese', shopping_cart.products)
+        self.assertEqual({'salami': 33.30}, shopping_cart.products)
+
+    def test_dunder_add_method(self):
+        shopping_cart = ShoppingCart('Winery', 560)
+        shopping_cart.add_to_cart('cheese', 55.50)
+        shopping_cart.add_to_cart('salami', 33.30)
+        another_shopping_cart = ShoppingCart('NewWinery', 510)
+        another_shopping_cart.add_to_cart('white wine', 40.50)
+        another_shopping_cart.add_to_cart('red wine', 40.80)
+        new_shopping_cart = shopping_cart.__add__(another_shopping_cart)
+        self.assertEqual('WineryNewWinery', new_shopping_cart.shop_name)
+        self.assertEqual(1070, new_shopping_cart.budget)
+        self.assertEqual({'cheese': 55.50, 'salami': 33.30, 'white wine': 40.50, 'red wine': 40.80},
+                         new_shopping_cart.products)
+
+    def test_buy_products_raises(self):
+        shopping_cart = ShoppingCart('Winery', 165)
+        shopping_cart.add_to_cart('cheese', 55.50)
+        shopping_cart.add_to_cart('salami', 33.30)
+        shopping_cart.add_to_cart('white wine', 40.50)
+        shopping_cart.add_to_cart('red wine', 40.80)
+        with self.assertRaises(ValueError) as ve:
+            shopping_cart.buy_products()
+        self.assertEqual('Not enough money to buy the products! Over budget with 5.10lv!', str(ve.exception))
+
+    def test_buy_products_method(self):
+        shopping_cart = ShoppingCart('Winery', 560)
+        shopping_cart.add_to_cart('cheese', 55.50)
+        shopping_cart.add_to_cart('salami', 33.30)
+        shopping_cart.add_to_cart('white wine', 40.50)
+        shopping_cart.add_to_cart('red wine', 40.80)
+        self.assertEqual('Products were successfully bought! Total cost: 170.10lv.',
+                         shopping_cart.buy_products())
+
+
+if __name__ == '__main__':
+    main()
