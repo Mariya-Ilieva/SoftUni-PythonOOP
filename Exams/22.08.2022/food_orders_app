@@ -1,0 +1,84 @@
+from copy import copy
+from FoodOrdersApp.client import Client
+from FoodOrdersApp.meals.meal import Meal
+
+
+class FoodOrdersApp:
+    def __init__(self):
+        self.menu = []
+        self.clients_list = []
+
+    def __find_client_by_phone_number(self, phone_number):
+        for c in self.clients_list:
+            if c.phone_number == phone_number:
+                return c
+        new = Client(phone_number)
+        self.clients_list.append(new)
+        return new
+
+    def register_client(self, client_phone_number):
+        client = [c for c in self.clients_list if c.phone_number == client_phone_number]
+        if client:
+            raise Exception('The client has already been registered!')
+        self.clients_list.append(Client(client_phone_number))
+        return f'Client {client_phone_number} registered successfully.'
+
+    def add_meals_to_menu(self, *meals: Meal):
+        valid_meals = ['Starter', 'MainDish', 'Dessert']
+        for meal in meals:
+            if meal.__class__.__name__ in valid_meals:
+                self.menu.append(meal)
+
+    def show_menu(self):
+        if len(self.menu) < 5:
+            raise Exception('The menu is not ready!')
+        else:
+            output = ''
+            for meal in self.menu:
+                output += meal.details() + '\n'
+            return output.strip()
+
+    def add_meals_to_shopping_cart(self, client_phone_number, **meal_names_and_quantities):
+        if len(self.menu) < 5:
+            raise Exception('The menu is not ready!')
+        client = self.__find_client_by_phone_number(client_phone_number)
+        to_add = []
+        for name, quantity in meal_names_and_quantities.items():
+            meal = [m for m in self.menu if m.name == name]
+            if not meal:
+                raise Exception(f'{name} is not on the menu!')
+            if meal and quantity > meal[0].quantity:
+                raise Exception(f'Not enough quantity of {meal[0].__class__.__name__}: {meal[0].name}!')
+            if meal and quantity <= meal[0].quantity:
+                to_cart = copy(meal[0])
+                to_cart.quantity = quantity
+                to_add.append(to_cart)
+                meal[0].quantity -= quantity
+        client.shopping_cart.extend(to_add)
+        client.bill = sum([m.price * m.quantity for m in client.shopping_cart])
+        return f'Client {client_phone_number} successfully ordered ' \
+            f'{", ".join([m.name for m in client.shopping_cart])} for {client.bill:.2f}lv.'
+
+    def cancel_order(self, client_phone_number):
+        client = [c for c in self.clients_list if c.phone_number == client_phone_number]
+        if not client[0].shopping_cart:
+            raise Exception('There are no ordered meals!')
+        for meal in client[0].shopping_cart:
+            meal1 = [x for x in self.menu if x.name == meal.name]
+            meal1[0].quantity += meal.quantity
+        client[0].shopping_cart = []
+        client[0].bill = 0.0
+        return f'Client {client_phone_number} successfully canceled his order.'
+
+    def finish_order(self, client_phone_number):
+        client = [c for c in self.clients_list if c.phone_number == client_phone_number]
+        if not client[0].shopping_cart:
+            raise Exception('There are no ordered meals!')
+        paid = client[0].bill
+        client[0].shopping_cart = []
+        client[0].bill = 0.0
+        return f'Receipt #{Client.get_next_receipt_id()} with total amount of {paid:.2f} ' \
+               f'was successfully paid for {client_phone_number}.'
+
+    def __str__(self):
+        return f'Food Orders App has {len(self.menu)} meals on the menu and {len(self.clients_list)} clients.'
